@@ -20,6 +20,9 @@ export interface Product {
   description: string;
   season?: string;
   color?: string; // Hex code for primary team color (without #)
+  stock?: number;   // live stock from the API (undefined for offline fallback data)
+  isPreorder?: boolean;
+  isActive?: boolean;
 }
 
 export interface CartItem extends Product {
@@ -33,10 +36,41 @@ export interface CartItem extends Product {
   };
 }
 
-export type PageView = 'home' | 'shop' | 'product' | 'cart' | 'checkout-success' | 'wishlist';
+export type PageView = 'home' | 'shop' | 'product' | 'cart' | 'order' | 'wishlist';
 
 export interface FilterState {
   league: string[];
   type: string[];
   maxPrice: number;
+}
+export type PaymentMethod = 'bkash' | 'sslcommerz' | 'cod';
+export type GatewayMode = 'mock' | 'sandbox' | 'live';
+
+export interface StoreConfig {
+  payments: Record<PaymentMethod, GatewayMode>;
+}
+
+export interface CheckoutCustomer {
+  name: string;
+  phone: string;
+  email: string;
+  district: string;
+  address: string;
+  note: string;
+}
+
+export interface PublicOrder {
+  id: string;
+  status: 'pending_payment' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentMethod: PaymentMethod;
+  paymentStatus: 'unpaid' | 'paid' | 'failed' | 'cancelled' | 'refunded';
+  trxId: string | null;
+  customer: { name: string; phone: string; email: string | null; district: string; address: string };
+  subtotal: number;
+  shippingFee: number;
+  codFee: number;
+  total: number;
+  createdAt: string;
+  items: { name: string; image: string; size: string; quantity: number; unitPrice: number; customization: { name: string; number: string; font: string } | null }[];
+  timeline: { message: string; at: string }[];
 }

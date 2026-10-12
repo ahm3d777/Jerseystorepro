@@ -66,6 +66,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               Player
             </span>
           )}
+          {product.status === 'out-of-stock' && (
+            <span className="bg-gray-900/80 text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
+              Sold Out
+            </span>
+          )}
+          {product.status === 'pre-order' && (
+            <span className="bg-brand-gold text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
+              Pre-order
+            </span>
+          )}
+          {product.status === 'low-stock' && product.stock !== undefined && (
+            <span className="bg-white text-brand-crimson text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
+              Only {product.stock} left
+            </span>
+          )}
           {product.originalPrice && (
             <span className="bg-brand-crimson text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
               Save {(100 - (product.price / product.originalPrice * 100)).toFixed(0)}%

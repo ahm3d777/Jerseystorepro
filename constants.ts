@@ -19,6 +19,10 @@ const createGallery = (mainImage: string, team: string, color: string) => {
     ];
 };
 
+/**
+ * Seed catalogue. The live catalogue is served from D1 (/api/products);
+ * this list generates migrations/0002_seed.sql and is the offline fallback.
+ */
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
@@ -242,5 +246,4 @@ export const MOCK_PRODUCTS: Product[] = [
   }
 ];
 
-export const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
-export const FONT_STYLES = ['League Official', 'Cup Font', 'Retro'];
+export { AVAILABLE_SIZES, FONT_STYLES } from './shared/catalog';

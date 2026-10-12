@@ -1,7 +1,36 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bangladesh-premium-jersey-store",
+  "main": "worker/index.ts",
   "compatibility_date": "2025-12-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // React storefront + admin, built by Vite. /api/* hits the Worker first; every other path falls back to index.html.
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "premiumkits",
+      // Replace with the id printed by: npx wrangler d1 create premiumkits
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Release stock held by unpaid online orders.
+  "triggers": { "crons": ["*/15 * * * *"] },
+
+  "vars": {
+    "PAYMENT_MODE": "sandbox",
+    "PENDING_ORDER_TTL_MIN": "30"
   }
+  // Secrets (never commit): BKASH_*, SSLCZ_*, ADMIN_EMAIL, ADMIN_PASSWORD, JWT_SECRET
+  //   npx wrangler secret put BKASH_APP_KEY   ...etc. See README.
 }

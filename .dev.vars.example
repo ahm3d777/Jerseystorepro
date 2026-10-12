@@ -1,0 +1,29 @@
+# Copy to .dev.vars for local development (it is git-ignored).
+# Any gateway left without credentials automatically uses the built-in payment simulator.
+
+# Public origin for gateway callbacks (bKash callbackURL, SSLCommerz success/fail/cancel/ipn).
+# Local dev: the Vite dev server origin. Production: leave empty to use the request origin.
+# SSLCommerz IPN needs a publicly reachable URL — use a tunnel (e.g. cloudflared) to test IPN locally.
+APP_URL=http://localhost:3000
+
+# "sandbox" = real bKash / SSLCommerz sandboxes, "mock" = simulator for both.
+PAYMENT_MODE=sandbox
+
+# --- bKash Tokenized Checkout sandbox ---
+# Get sandbox credentials from https://developer.bka.sh (or your bKash merchant onboarding contact).
+BKASH_BASE_URL=https://tokenized.sandbox.bka.sh/v1.2.0-beta
+BKASH_APP_KEY=
+BKASH_APP_SECRET=
+BKASH_USERNAME=
+BKASH_PASSWORD=
+
+# --- SSLCommerz sandbox ---
+# Free sandbox store: https://developer.sslcommerz.com/registration/
+SSLCZ_STORE_ID=
+SSLCZ_STORE_PASSWD=
+
+# --- Admin panel (/admin) ---
+ADMIN_EMAIL=admin@premiumkits.test
+ADMIN_PASSWORD=change-me-please
+# 32+ random characters: openssl rand -hex 32
+JWT_SECRET=

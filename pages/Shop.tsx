@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ProductCard, ProductCardSkeleton } from '../components/ProductCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
-import { MOCK_PRODUCTS } from '../constants';
 import { Filter, ChevronDown, SlidersHorizontal, Search } from 'lucide-react';
 
 export const Shop = () => {
-  const { activeCategory, setCategory } = useStore();
+  const { activeCategory, setCategory, products, productsLoading } = useStore();
   const [priceRange, setPriceRange] = useState<number>(3000);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +16,7 @@ export const Shop = () => {
     return () => clearTimeout(timer);
   }, [activeCategory]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => {
+  const filteredProducts = products.filter(p => {
     if (activeCategory !== 'All' && p.league !== activeCategory) return false;
     if (p.price > priceRange) return false;
     return true;
@@ -88,7 +87,7 @@ export const Shop = () => {
         </div>
 
         <div className="min-h-[400px]">
-          {isLoading ? (
+          {isLoading || productsLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-8 md:gap-y-12">
               {[...Array(8)].map((_, i) => (
                 <ProductCardSkeleton key={i} />

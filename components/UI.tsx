@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { X, CheckCircle, Info } from 'lucide-react';
+import { X, CheckCircle, Info, AlertCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
 interface ButtonProps {
@@ -10,6 +10,7 @@ interface ButtonProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   fullWidth?: boolean;
+  type?: 'button' | 'submit';
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
@@ -18,7 +19,8 @@ export const Button: React.FC<ButtonProps> = ({
   className = '', 
   onClick, 
   disabled = false,
-  fullWidth = false
+  fullWidth = false,
+  type = 'button'
 }) => {
   // Modern Pill Shape (rounded-full)
   const baseStyle = "px-8 py-3 relative overflow-hidden rounded-full font-heading font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-xs uppercase tracking-widest group active:scale-[0.98]";
@@ -35,6 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button 
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${baseStyle} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
@@ -120,13 +123,13 @@ export const NotificationContainer = () => {
   const { notifications, removeNotification } = useStore();
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3">
+    <div className="fixed bottom-6 right-4 left-4 sm:left-auto sm:right-6 z-[200] flex flex-col gap-3">
       {notifications.map(note => (
         <div 
           key={note.id}
-          className="bg-brand-dark text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-4 animate-slide-up min-w-[300px]"
+          className="bg-brand-dark text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-4 animate-slide-up sm:min-w-[300px]"
         >
-          {note.type === 'success' ? <CheckCircle className="text-green-400" size={20} /> : <Info className="text-brand-gold" size={20} />}
+          {note.type === 'success' ? <CheckCircle className="text-green-400" size={20} /> : note.type === 'error' ? <AlertCircle className="text-red-400" size={20} /> : <Info className="text-brand-gold" size={20} />}
           <p className="text-sm font-bold flex-1">{note.message}</p>
           <button onClick={() => removeNotification(note.id)} className="text-gray-400 hover:text-white">
             <X size={16} />

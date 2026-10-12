@@ -1,160 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bangladesh Premium Jersey Store</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>PremiumKits — Authentic Football Jerseys in Bangladesh</title>
+    <meta name="description" content="Authentic club and national team football jerseys delivered across Bangladesh. Pay with bKash, cards via SSLCommerz, or Cash on Delivery." />
+    <meta name="theme-color" content="#050505" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                crimson: '#D40D36', // Rich Ruby Red
-                crimsonDark: '#9F0A28', // Deep Burgundy
-                royal: '#0F172A', // Slate 900 (Deepest Navy)
-                royalLight: '#1E293B', // Slate 800
-                dark: '#050505', // Luxury Black
-                gold: '#CFA238', // Champagne/Metallic Gold
-                goldLight: '#E5C468',
-                offWhite: '#FAFAFA', // Alabaster White
-                glass: 'rgba(255, 255, 255, 0.8)'
-              }
-            },
-            fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-              heading: ['"Space Grotesk"', 'sans-serif'],
-              sport: ['"Oswald"', 'sans-serif'],
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              'fade-out': 'fadeOut 0.5s ease-in forwards',
-              'slide-up': 'slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              'slide-up-delayed': 'slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards',
-              'zoom-in-slow': 'zoomInSlow 20s linear infinite alternate',
-              'float': 'float 6s ease-in-out infinite',
-              'float-delayed': 'float 6s ease-in-out 3s infinite',
-              'shimmer': 'shimmer 2.5s linear infinite',
-              'shine': 'shine 1.5s ease-in-out infinite',
-              'roll-across': 'rollAcross 2s ease-in-out infinite',
-              'ball-roll': 'ballRoll 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              'load-progress': 'loadProgress 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              'marquee': 'marquee 30s linear infinite',
-              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'spin-slow': 'spin 12s linear infinite',
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              },
-              fadeOut: {
-                '0%': { opacity: '1' },
-                '100%': { opacity: '0' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(40px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              },
-              zoomInSlow: {
-                '0%': { transform: 'scale(1)' },
-                '100%': { transform: 'scale(1.15)' },
-              },
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-20px)' },
-              },
-              shimmer: {
-                '0%': { backgroundPosition: '-1000px 0' },
-                '100%': { backgroundPosition: '1000px 0' }
-              },
-              shine: {
-                '0%': { transform: 'translateX(-100%)' },
-                '100%': { transform: 'translateX(100%)' }
-              },
-              rollAcross: {
-                '0%': { transform: 'translateX(-100%) rotate(0deg)' },
-                '100%': { transform: 'translateX(400%) rotate(720deg)' }
-              },
-              ballRoll: {
-                '0%': { left: '0%', transform: 'translate(-50%, -50%) rotate(0deg)' },
-                '100%': { left: '100%', transform: 'translate(-50%, -50%) rotate(1080deg)' }
-              },
-              loadProgress: {
-                '0%': { width: '0%' },
-                '100%': { width: '100%' }
-              },
-              marquee: {
-                '0%': { transform: 'translateX(0)' },
-                '100%': { transform: 'translateX(-50%)' }
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      html {
-        scroll-behavior: smooth;
-      }
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #050505;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #1E293B;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #D40D36;
-      }
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      .text-outline {
-        -webkit-text-stroke: 1px rgba(255,255,255,0.2);
-        color: transparent;
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .animate-marquee {
-        will-change: transform;
-      }
-      .marquee-container:hover .animate-marquee {
-        animation-play-state: paused;
-      }
-      .glass-shimmer {
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-        background-size: 200% 100%;
-        animation: shimmer 2s infinite linear;
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
+  </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

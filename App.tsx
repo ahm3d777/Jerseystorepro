@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -8,7 +8,7 @@ import { Shop } from './pages/Shop';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Wishlist } from './pages/Wishlist';
-import { CheckoutSuccess } from './pages/CheckoutSuccess';
+import { OrderStatus } from './pages/OrderStatus';
 import { NotificationContainer } from './components/UI';
 
 interface FootballIconProps {
@@ -79,7 +79,7 @@ const MainContent = () => {
       case 'product': return <ProductDetail />;
       case 'cart': return <Cart />;
       case 'wishlist': return <Wishlist />;
-      case 'checkout-success': return <CheckoutSuccess />;
+      case 'order': return <OrderStatus />;
       default: return <Home />;
     }
   };
@@ -96,10 +96,26 @@ const MainContent = () => {
   );
 };
 
+// Admin panel is code-split so shoppers never download it.
+const AdminApp = lazy(() => import('./admin/AdminApp'));
+
 const App = () => {
-  const [loading, setLoading] = useState(true);
+  if (window.location.pathname.startsWith('/admin')) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+        <AdminApp />
+      </Suspense>
+    );
+  }
+  return <Storefront />;
+};
+
+const Storefront = () => {
+  // Skip the splash when returning from a payment gateway.
+  const [loading, setLoading] = useState(() => !window.location.pathname.startsWith('/order/'));
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1400); 
+    if (!loading) return;
+    const timer = setTimeout(() => setLoading(false), 1400);
     return () => clearTimeout(timer);
   }, []);
 

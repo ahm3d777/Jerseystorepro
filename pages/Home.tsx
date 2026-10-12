@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Button, Reveal } from '../components/UI';
 import { ProductCard, ProductCardSkeleton } from '../components/ProductCard';
-import { MOCK_PRODUCTS } from '../constants';
 import { ASSETS } from '../assets/images';
 import { ArrowRight, ShieldCheck, Truck, Clock, Flame, Star, ChevronRight, Users, CheckCircle, Sparkles, Zap, Activity, Cpu, Layers, Trophy, Timer, Thermometer, Wind, Target, CreditCard, RefreshCw, Gauge, Fingerprint } from 'lucide-react';
 
@@ -33,7 +32,7 @@ const MarqueeItem = () => (
 );
 
 export const Home = () => {
-  const { navigateTo, setCategory } = useStore();
+  const { navigateTo, setCategory, products } = useStore();
   const [isVisible, setIsVisible] = useState(false);
   const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
   const [stockRemaining, setStockRemaining] = useState(12);
@@ -60,8 +59,8 @@ export const Home = () => {
     };
   }, []);
 
-  const featuredProducts = MOCK_PRODUCTS.slice(0, 4);
-  const specialJersey = MOCK_PRODUCTS.find(p => p.id === '10') || MOCK_PRODUCTS[0];
+  const featuredProducts = products.slice(0, 4);
+  const specialJersey = products.find(p => p.type === 'Special') || products[0];
 
   return (
     <div className="animate-fade-in overflow-hidden">

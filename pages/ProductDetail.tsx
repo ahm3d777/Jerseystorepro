@@ -4,6 +4,7 @@ import { useStore } from '../context/StoreContext';
 import { Button, Badge, Reveal, Skeleton } from '../components/UI';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { CURRENCY_SYMBOL, AVAILABLE_SIZES, FONT_STYLES } from '../constants';
+import { isCustomized, unitPrice } from '../shared/pricing';
 import { Check, Star, Truck, Shield, Ruler, Share2, Heart, ChevronLeft, ChevronRight, ShoppingBag, Droplets, Thermometer, Wind } from 'lucide-react';
 
 const ProductDetailSkeleton = () => (
@@ -32,7 +33,7 @@ const ProductDetailSkeleton = () => (
 );
 
 export const ProductDetail = () => {
-  const { currentProduct, addToCart, navigateTo, toggleWishlist, wishlist } = useStore();
+  const { currentProduct, addToCart, navigateTo, toggleWishlist, wishlist, productsLoading } = useStore();
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [customization, setCustomization] = useState<{name: string, number: string, font: string}>({
@@ -62,15 +63,23 @@ export const ProductDetail = () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [currentProduct]);
+  }, [currentProduct?.id]);
 
   if (!currentProduct) {
-    navigateTo('home');
-    return null;
+    if (productsLoading) return <div className="bg-white min-h-screen pt-4 md:pt-8"><ProductDetailSkeleton /></div>;
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6">
+        <h1 className="text-2xl font-heading font-black text-brand-dark uppercase mb-3">Jersey not found</h1>
+        <p className="text-gray-500 text-sm mb-8">This product may have been removed from the store.</p>
+        <Button onClick={() => navigateTo('shop')} variant="black">Browse Shop</Button>
+      </div>
+    );
   }
 
+  const soldOut = currentProduct.status === 'out-of-stock';
+
   const isWishlisted = wishlist.includes(currentProduct.id);
-  const totalPrice = isCustomizing ? currentProduct.price + 800 : currentProduct.price;
+  const totalPrice = unitPrice(currentProduct.price, isCustomizing && isCustomized(customization));
   const gallery = currentProduct.gallery && currentProduct.gallery.length > 0 
     ? currentProduct.gallery 
     : [currentProduct.image, currentProduct.image, currentProduct.image, currentProduct.image];
@@ -127,10 +136,11 @@ export const ProductDetail = () => {
           </div>
           <button 
             onClick={handleAddToCart}
-            className="flex-1 h-14 bg-brand-dark text-white font-heading font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-brand-crimson active:scale-95 transition-all flex items-center justify-center gap-3 rounded-full group"
+            disabled={soldOut}
+            className="flex-1 h-14 disabled:opacity-40 disabled:pointer-events-none bg-brand-dark text-white font-heading font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-brand-crimson active:scale-95 transition-all flex items-center justify-center gap-3 rounded-full group"
           >
             <ShoppingBag size={18} />
-            <span>ADD TO BAG</span>
+            <span>{soldOut ? 'SOLD OUT' : 'ADD TO BAG'}</span>
           </button>
         </div>
       </div>
@@ -287,8 +297,8 @@ export const ProductDetail = () => {
 
             <Reveal delay={0.6}>
               <div className="flex gap-3 pt-4">
-                <Button onClick={handleAddToCart} fullWidth variant="primary" className="h-14 sm:h-16 text-xs sm:text-lg flex-1 rounded-full">
-                  Add to Cart — {CURRENCY_SYMBOL}{totalPrice.toLocaleString()}
+                <Button onClick={handleAddToCart} disabled={soldOut} fullWidth variant="primary" className="h-14 sm:h-16 text-xs sm:text-lg flex-1 rounded-full">
+                  {soldOut ? 'Sold Out' : <>{currentProduct.status === 'pre-order' ? 'Pre-order' : 'Add to Cart'} — {CURRENCY_SYMBOL}{totalPrice.toLocaleString()}</>}
                 </Button>
                 <button onClick={() => toggleWishlist(currentProduct.id)} className={`h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center border rounded-full transition-all active:scale-90 ${isWishlisted ? 'bg-red-50 border-brand-crimson text-brand-crimson' : 'border-gray-100 text-gray-300'}`}>
                   <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />

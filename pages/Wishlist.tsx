@@ -4,13 +4,12 @@ import { useStore } from '../context/StoreContext';
 import { ProductCard } from '../components/ProductCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Button } from '../components/UI';
-import { MOCK_PRODUCTS } from '../constants';
 import { Heart, ArrowRight } from 'lucide-react';
 
 export const Wishlist = () => {
-  const { wishlist, navigateTo } = useStore();
+  const { wishlist, navigateTo, products } = useStore();
 
-  const wishlistedProducts = MOCK_PRODUCTS.filter(p => wishlist.includes(p.id));
+  const wishlistedProducts = products.filter(p => wishlist.includes(p.id));
 
   const breadcrumbs = [
     { label: 'Wishlist', view: 'wishlist' as const }
