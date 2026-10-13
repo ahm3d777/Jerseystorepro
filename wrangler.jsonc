@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "bangladesh-premium-jersey-store",
+  "name": "jerseystorepro",
   "main": "worker/index.ts",
   "compatibility_date": "2025-12-28",
   "compatibility_flags": ["nodejs_compat"],
@@ -18,8 +18,7 @@
     {
       "binding": "DB",
       "database_name": "premiumkits",
-      // Replace with the id printed by: npx wrangler d1 create premiumkits
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "61feae26-a6e6-4f03-993f-0d69a89b7144",
       "migrations_dir": "migrations"
     }
   ],
