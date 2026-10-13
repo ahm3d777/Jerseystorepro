@@ -1,106 +1,231 @@
-
-import React from 'react';
-import { Facebook, Instagram, Twitter, Phone, Mail, MapPin, ArrowRight } from 'lucide-react';
-import { Button } from './UI';
+import React, { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import { lastOrderPath } from '../lib/navigation';
 
 export const Footer = () => {
+  const { navigateTo, setCategory, showNotification } = useStore();
+  const [email, setEmail] = useState('');
+
+  const handleNav = (category: string) => {
+    setCategory(category);
+    navigateTo('shop');
+  };
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !email.includes('@')) {
+      showNotification('Please enter a valid email address', 'error');
+      return;
+    }
+    showNotification('Added to the Banani Vault drop roster!', 'success');
+    setEmail('');
+  };
+
   return (
-    <footer className="bg-brand-dark text-white pt-20 pb-8 mt-auto border-t border-white/5 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-crimson to-transparent opacity-50"></div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          
-          {/* About */}
-          <div className="space-y-8">
-            {/* Premium Modern Logo */}
-            <div className="flex items-center gap-3 group cursor-pointer">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg transition-all duration-500 group-hover:scale-110">
-                   <path d="M32 2L54 12V32C54 48 44 58 32 62C20 58 10 48 10 32V12L32 2Z" fill="#1E293B" stroke="white" strokeWidth="1.5" strokeOpacity="0.2" />
-                   <path d="M26 20V44M26 20H38C42 20 44 22 44 26C44 30 42 32 38 32H26" stroke="white" strokeWidth="3" strokeLinecap="square" />
-                   <path d="M34 32L44 44" stroke="#D40D36" strokeWidth="3" strokeLinecap="square" />
-                </svg>
+    <footer className="w-full bg-surface-container-lowest border-t border-surface-border mt-space-3xl">
+      <div className="max-w-7xl mx-auto px-margin-mobile lg:px-margin pt-space-2xl pb-space-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-space-xl mb-space-2xl">
+          {/* Brand Column (2 cols on desktop) */}
+          <div className="lg:col-span-2 flex flex-col gap-space-md">
+            <button
+              type="button"
+              onClick={() => navigateTo('home')}
+              className="flex items-center gap-space-sm w-fit text-left group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-surface-charcoal-elevated border border-surface-border group-hover:bg-primary-container transition-colors flex items-center justify-center">
+                <span className="font-headline-md text-headline-md font-bold text-primary group-hover:text-on-primary-container">
+                  PK
+                </span>
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="font-heading font-black text-2xl leading-none tracking-tighter">
-                  PREMIUM<span className="text-brand-crimson">KITS</span>
-                </div>
-                <div className="text-[9px] uppercase tracking-[0.4em] font-bold text-gray-500">Bangladesh</div>
-              </div>
-            </div>
-            
-            <p className="text-gray-400 text-sm leading-relaxed max-w-xs font-light">
-              Bangladesh's most trusted destination for authentic football merchandise. 
-              We bring the stadium atmosphere to your wardrobe with premium quality jerseys.
+              <span className="font-headline-md text-title-sm font-bold tracking-tight text-on-surface">
+                PREMIUM KITS BANGLADESH
+              </span>
+            </button>
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">
+              Bangladesh&apos;s premier destination for match-issue and authentic club apparel. Certified match-spec
+              weaves, player typography customization, and historical archive jerseys direct to Dhaka and nationwide.
             </p>
-            <div className="flex gap-4 pt-2">
-              <a href="#" className="w-10 h-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center hover:bg-brand-royal hover:border-brand-royal transition-all duration-300 hover:-translate-y-1 group"><Facebook size={18} className="group-hover:text-white" /></a>
-              <a href="#" className="w-10 h-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center hover:bg-brand-crimson hover:border-brand-crimson transition-all duration-300 hover:-translate-y-1 group"><Instagram size={18} className="group-hover:text-white" /></a>
-              <a href="#" className="w-10 h-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-400 hover:border-blue-400 transition-all duration-300 hover:-translate-y-1 group"><Twitter size={18} className="group-hover:text-white" /></a>
+            <div className="flex items-center gap-space-sm mt-space-xs">
+              <span className="font-label-caps text-label-caps text-gold-muted">
+                ✦ AUTHORIZED AUTHENTICITY CERTIFIED
+              </span>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="lg:pl-8">
-            <h4 className="font-heading font-bold text-lg mb-6 text-white tracking-wide border-l-2 border-brand-crimson pl-3">Shop</h4>
-            <ul className="space-y-3 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200 flex items-center gap-2"><span className="w-1 h-1 bg-brand-crimson rounded-full opacity-0 hover:opacity-100"></span> New Arrivals</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200 flex items-center gap-2"><span className="w-1 h-1 bg-brand-crimson rounded-full opacity-0 hover:opacity-100"></span> Best Sellers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200 flex items-center gap-2"><span className="w-1 h-1 bg-brand-crimson rounded-full opacity-0 hover:opacity-100"></span> Player Edition</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200 flex items-center gap-2"><span className="w-1 h-1 bg-brand-crimson rounded-full opacity-0 hover:opacity-100"></span> Retro Kits</a></li>
+          {/* Shop Vault Links */}
+          <div className="flex flex-col gap-space-sm">
+            <span className="font-label-caps text-label-caps uppercase text-on-surface tracking-wider font-bold">
+              Shop Vault
+            </span>
+            <ul className="flex flex-col gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('All')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  2025/26 New Arrivals
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('Player ADV')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Player Issue ADV Kits
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('Retro Heritage')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Retro Archive (1990-2010)
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('Vault / Drops')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Limited Vault Editions
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('International')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  National Team Editions
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Support */}
-          <div>
-            <h4 className="font-heading font-bold text-lg mb-6 text-white tracking-wide border-l-2 border-brand-crimson pl-3">Support</h4>
-            <ul className="space-y-3 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200">Track Order</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200">Shipping Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200">Returns & Exchange</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200">Size Guide</a></li>
-              <li><a href="#" className="hover:text-white transition-colors block py-1 hover:translate-x-1 duration-200">Contact Us</a></li>
+          {/* Support & Spec Links */}
+          <div className="flex flex-col gap-space-sm">
+            <span className="font-label-caps text-label-caps uppercase text-on-surface tracking-wider font-bold">
+              Support &amp; Spec
+            </span>
+            <ul className="flex flex-col gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo('home');
+                    setTimeout(() => {
+                      document.getElementById('player-adv-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Fabric &amp; Sizing Matrix
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const path = lastOrderPath();
+                    if (path) {
+                      window.history.pushState(null, '', path);
+                      navigateTo('order');
+                      return;
+                    }
+                    showNotification('Place an order or open your confirmation link to track live dispatch.', 'info');
+                  }}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Track Your Consignment
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() =>
+                    showNotification('Every kit includes an encrypted holographic NFC serial tag.', 'info')
+                  }
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Authenticity Verification
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() =>
+                    showNotification('Same-day dispatch across Gulshan, Banani, Dhanmondi & Uttara.', 'info')
+                  }
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  Dhaka Same-Day Delivery
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => showNotification('VIP Concierge: WhatsApp +880 1700-000000 (10am–10pm BD)', 'info')}
+                  className="hover:text-on-surface transition-colors text-left"
+                >
+                  VIP Concierge Support
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className="font-heading font-bold text-lg mb-6 text-white tracking-wide border-l-2 border-brand-crimson pl-3">Stay Updated</h4>
-            <p className="text-gray-400 text-sm mb-4">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
-            <div className="space-y-3">
-              <div className="relative group">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="w-full bg-white/5 border border-white/10 rounded-none px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-brand-crimson focus:ring-1 focus:ring-brand-crimson transition-all"
-                />
-              </div>
-              <Button variant="primary" fullWidth className="text-xs h-12 shadow-none hover:shadow-lg rounded-none">
-                Subscribe <ArrowRight size={14} />
-              </Button>
-            </div>
+          {/* Drop Access Newsletter */}
+          <div className="flex flex-col gap-space-sm">
+            <span className="font-label-caps text-label-caps uppercase text-on-surface tracking-wider font-bold">
+              Drop Access
+            </span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              Subscribe for micro-run alerts and restricted vault restocks.
+            </p>
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-space-xs mt-space-xs">
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-surface-charcoal border border-surface-border px-space-sm py-2 rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary-container"
+                placeholder="Enter your email"
+                type="email"
+              />
+              <button
+                className="w-full bg-primary-container hover:bg-crimson-vibrant text-on-primary-container font-label-caps text-label-caps uppercase tracking-wider py-2.5 rounded-lg transition-colors flex items-center justify-center gap-space-xs"
+                type="submit"
+              >
+                <span>Join The Roster</span>
+                <ArrowRight size={14} />
+              </button>
+            </form>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-500 font-medium tracking-wide">© 2026 Premium Kits Bangladesh. All rights reserved.</p>
-          <div className="flex gap-3 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-            <div className="h-7 px-2 bg-white rounded-sm flex items-center justify-center border border-gray-200">
-               <span className="text-blue-900 font-bold text-[10px] italic">VISA</span>
+        {/* Bottom Payment & Copyright Bar */}
+        <div className="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md bg-surface-container-low border border-surface-border p-space-md rounded-xl">
+          <div className="flex flex-wrap items-center justify-center gap-space-md">
+            <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Secured Payments:</span>
+            <div className="flex items-center gap-space-sm">
+              <span className="font-label-caps text-label-caps px-2.5 py-1 rounded bg-surface-charcoal border border-surface-border text-primary font-bold">
+                bKash
+              </span>
+              <span className="font-label-caps text-label-caps px-2.5 py-1 rounded bg-surface-charcoal border border-surface-border text-secondary font-bold">
+                Nagad
+              </span>
+              <span className="font-label-caps text-label-caps px-2.5 py-1 rounded bg-surface-charcoal border border-surface-border text-on-surface font-bold">
+                VISA
+              </span>
+              <span className="font-label-caps text-label-caps px-2.5 py-1 rounded bg-surface-charcoal border border-surface-border text-on-surface font-bold">
+                Mastercard
+              </span>
             </div>
-            <div className="h-7 px-2 bg-white rounded-sm flex items-center justify-center border border-gray-200">
-               <span className="text-orange-500 font-bold text-[10px]">Mastercard</span>
-            </div>
-            <div className="h-7 px-2 bg-pink-600 rounded-sm flex items-center justify-center border border-pink-700">
-               <span className="text-white font-bold text-[10px]">bKash</span>
-            </div>
-            <div className="h-7 px-2 bg-orange-600 rounded-sm flex items-center justify-center border border-orange-700">
-               <span className="text-white font-bold text-[10px]">Nagad</span>
-            </div>
+          </div>
+          <div className="font-body-sm text-body-sm text-on-surface-variant text-center md:text-right">
+            © 2025–2026 Premium Kits Bangladesh. All Rights Reserved. Engineered for matchday perfection.
           </div>
         </div>
       </div>

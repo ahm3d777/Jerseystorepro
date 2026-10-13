@@ -2,16 +2,27 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Button, Skeleton } from '../components/UI';
 import { CURRENCY_SYMBOL } from '../constants';
-import { CheckCircle, XCircle, Clock, Package, Truck, Home, ArrowRight, Loader2, Copy, RefreshCw } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Package,
+  Truck,
+  Home,
+  ArrowRight,
+  Loader2,
+  Copy,
+  RefreshCw
+} from 'lucide-react';
 import { ApiError, getOrder, retryPayment } from '../lib/api';
 import type { PublicOrder } from '../types';
 
 const METHOD_LABEL = { bkash: 'bKash', sslcommerz: 'SSLCommerz', cod: 'Cash on Delivery' } as const;
 const STEPS = [
   { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
-  { key: 'processing', label: 'Packing', icon: Package },
-  { key: 'shipped', label: 'On the way', icon: Truck },
-  { key: 'delivered', label: 'Delivered', icon: Home },
+  { key: 'processing', label: 'Vault Packing', icon: Package },
+  { key: 'shipped', label: 'In Transit', icon: Truck },
+  { key: 'delivered', label: 'Delivered', icon: Home }
 ] as const;
 
 function readRoute() {
@@ -21,7 +32,13 @@ function readRoute() {
 }
 
 const formatDate = (s: string) =>
-  new Date(s.replace(' ', 'T') + 'Z').toLocaleString('en-GB', { timeZone: 'Asia/Dhaka', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  new Date(s.replace(' ', 'T') + 'Z').toLocaleString('en-GB', {
+    timeZone: 'Asia/Dhaka',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
 export const OrderStatus = () => {
   const { navigateTo, showNotification } = useStore();
@@ -33,7 +50,13 @@ export const OrderStatus = () => {
   const load = useCallback(() => {
     getOrder(id, token)
       .then(setOrder)
-      .catch((e) => setError(e instanceof ApiError && e.status === 404 ? 'We could not find this order. Check the link from your confirmation.' : 'Could not load your order. Please refresh.'));
+      .catch((e) =>
+        setError(
+          e instanceof ApiError && e.status === 404
+            ? 'We could not find this consignment. Check the link from your confirmation.'
+            : 'Could not load your consignment status. Please refresh.'
+        )
+      );
   }, [id, token]);
 
   useEffect(() => {
@@ -41,9 +64,14 @@ export const OrderStatus = () => {
     load();
   }, [load]);
 
-  // Bookmarkable: remember the latest order on this device.
   useEffect(() => {
-    if (order) try { localStorage.setItem('pk_last_order', JSON.stringify({ id, token })); } catch { /* ignore */ }
+    if (order) {
+      try {
+        localStorage.setItem('pk_last_order', JSON.stringify({ id, token }));
+      } catch {
+        /* ignore */
+      }
+    }
   }, [order, id, token]);
 
   const pay = async () => {
@@ -59,20 +87,22 @@ export const OrderStatus = () => {
 
   if (error) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
-        <XCircle size={48} className="text-gray-300 mb-6" strokeWidth={1.5} />
-        <h1 className="text-2xl font-heading font-black text-brand-dark uppercase mb-3">Order not found</h1>
-        <p className="text-gray-500 text-sm mb-8 max-w-sm">{error}</p>
-        <Button onClick={() => navigateTo('shop')} variant="black">Continue Shopping</Button>
+      <div className="min-h-[65vh] flex flex-col items-center justify-center text-center px-6">
+        <XCircle size={48} className="text-primary-container mb-6" strokeWidth={1.5} />
+        <h1 className="font-headline-xl text-headline-lg text-on-surface uppercase mb-3">Consignment Not Found</h1>
+        <p className="font-body-md text-body-md text-text-muted mb-8 max-w-sm">{error}</p>
+        <Button onClick={() => navigateTo('shop')} variant="primary">
+          Continue Shopping
+        </Button>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 space-y-6">
-        <Skeleton className="h-28 w-28 rounded-full mx-auto" />
-        <Skeleton className="h-10 w-2/3 mx-auto rounded" />
+      <div className="max-w-3xl mx-auto py-12 space-y-6">
+        <Skeleton className="h-24 w-24 rounded-2xl mx-auto" />
+        <Skeleton className="h-10 w-2/3 mx-auto rounded-lg" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
@@ -81,147 +111,254 @@ export const OrderStatus = () => {
   const paid = order.paymentStatus === 'paid';
   const awaitingPayment = order.status === 'pending_payment';
   const cancelled = order.status === 'cancelled';
-  const failedNow = awaitingPayment && (payment === 'failed' || payment === 'cancelled' || order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled');
+  const failedNow =
+    awaitingPayment &&
+    (payment === 'failed' ||
+      payment === 'cancelled' ||
+      order.paymentStatus === 'failed' ||
+      order.paymentStatus === 'cancelled');
 
   const hero = cancelled
-    ? { icon: <XCircle size={56} className="text-gray-400" strokeWidth={1.5} />, bg: 'bg-gray-100', tag: 'Cancelled', title: 'Order Cancelled' }
+    ? {
+        icon: <XCircle size={48} className="text-text-muted" strokeWidth={1.5} />,
+        bg: 'bg-surface-charcoal-elevated border-surface-border',
+        tag: 'Cancelled',
+        title: 'Consignment Cancelled'
+      }
     : awaitingPayment
       ? failedNow
-        ? { icon: <XCircle size={56} className="text-brand-crimson" strokeWidth={1.5} />, bg: 'bg-red-50', tag: payment === 'cancelled' || order.paymentStatus === 'cancelled' ? 'Payment cancelled' : 'Payment failed', title: 'Payment Not Completed' }
-        : { icon: <Clock size={56} className="text-amber-500" strokeWidth={1.5} />, bg: 'bg-amber-50', tag: 'Awaiting payment', title: 'Complete Your Payment' }
-      : { icon: <CheckCircle size={56} className="text-green-500" strokeWidth={1.5} />, bg: 'bg-green-50', tag: paid ? 'Payment successful' : 'Cash on Delivery', title: 'Order Confirmed' };
+        ? {
+            icon: <XCircle size={48} className="text-primary-container" strokeWidth={1.5} />,
+            bg: 'bg-primary-container/15 border-primary-container/40',
+            tag:
+              payment === 'cancelled' || order.paymentStatus === 'cancelled'
+                ? 'Settlement Cancelled'
+                : 'Settlement Failed',
+            title: 'Payment Not Completed'
+          }
+        : {
+            icon: <Clock size={48} className="text-secondary" strokeWidth={1.5} />,
+            bg: 'bg-secondary/15 border-secondary/40',
+            tag: 'Awaiting Settlement',
+            title: 'Complete Your Payment'
+          }
+      : {
+          icon: <CheckCircle size={48} className="text-secondary" strokeWidth={1.5} />,
+          bg: 'bg-secondary/15 border-secondary/40',
+          tag: paid ? 'Settlement Verified' : 'Cash on Delivery Confirmed',
+          title: 'Consignment Confirmed'
+        };
 
   const stepIndex = STEPS.findIndex((s) => s.key === order.status);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16 animate-fade-in">
-      <div className="text-center mb-10">
-        <div className={`w-28 h-28 ${hero.bg} rounded-full flex items-center justify-center mx-auto mb-8 animate-slide-up`}>{hero.icon}</div>
-        <div className="inline-block px-4 py-1.5 rounded-full bg-gray-50 border border-gray-100 mb-5">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{hero.tag}</span>
-        </div>
-        <h1 className="text-3xl md:text-5xl font-heading font-black text-brand-dark mb-4 tracking-tight leading-none">{hero.title}</h1>
-        <button
-          onClick={() => { navigator.clipboard?.writeText(order.id); showNotification('Order ID copied', 'info'); }}
-          className="inline-flex items-center gap-2 text-gray-400 font-medium hover:text-brand-dark"
+    <div className="max-w-4xl mx-auto py-6 md:py-12 animate-fade-in">
+      <div className="text-center mb-10 bg-surface-charcoal border border-surface-border rounded-2xl p-8 shadow-xl">
+        <div
+          className={`w-24 h-24 ${hero.bg} border rounded-2xl flex items-center justify-center mx-auto mb-6 animate-slide-up`}
         >
-          Order ID <span className="text-brand-dark font-mono font-bold">{order.id}</span> <Copy size={14} />
+          {hero.icon}
+        </div>
+        <div className="inline-block px-4 py-1 rounded-full bg-surface-charcoal-elevated border border-surface-border mb-4">
+          <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">{hero.tag}</span>
+        </div>
+        <h1 className="font-headline-xl text-headline-xl-mobile sm:text-headline-xl text-on-surface mb-3 uppercase tracking-tight">
+          {hero.title}
+        </h1>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard?.writeText(order.id);
+            showNotification('Consignment ID copied', 'info');
+          }}
+          className="inline-flex items-center gap-2 font-label-caps text-label-caps text-text-muted hover:text-on-surface bg-surface-charcoal-elevated px-3.5 py-1.5 rounded-lg border border-surface-border"
+        >
+          <span>CONSIGNMENT ID:</span>
+          <span className="text-primary font-bold">{order.id}</span>
+          <Copy size={13} />
         </button>
 
         {awaitingPayment && (
-          <div className="mt-8 max-w-md mx-auto">
-            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          <div className="mt-6 max-w-md mx-auto">
+            <p className="font-body-md text-body-md text-text-muted mb-6">
               {failedNow
-                ? 'No money was taken. Your items are reserved for a short while — try again below.'
-                : `We're holding your items. Finish paying with ${METHOD_LABEL[order.paymentMethod]} to confirm the order.`}
+                ? 'No funds were deducted. Your vault allocation is reserved briefly — retry below.'
+                : `We are holding your vault allocation. Complete payment via ${METHOD_LABEL[order.paymentMethod]} to dispatch.`}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button onClick={pay} disabled={paying} variant="black" className="whitespace-nowrap">
-                {paying ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} {failedNow ? 'Try again' : 'Pay now'} · {CURRENCY_SYMBOL}{order.total.toLocaleString()}
+              <Button onClick={pay} disabled={paying} variant="primary" className="whitespace-nowrap">
+                {paying ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}{' '}
+                {failedNow ? 'Retry Payment' : 'Pay Now'} · {CURRENCY_SYMBOL} {order.total.toLocaleString()}
               </Button>
-              <Button onClick={load} variant="outline" className="whitespace-nowrap">Refresh status</Button>
+              <Button onClick={load} variant="outline" className="whitespace-nowrap">
+                Refresh Status
+              </Button>
             </div>
           </div>
         )}
         {!awaitingPayment && !cancelled && (
-          <p className="text-gray-500 mt-6 max-w-lg mx-auto leading-relaxed">
-            Thank you, {order.customer.name.split(' ')[0]}! We'll call <span className="text-brand-dark font-semibold">{order.customer.phone}</span> before
-            dispatch. Delivery inside Dhaka takes 1–2 days, 3–5 days elsewhere.
+          <p className="font-body-md text-body-md text-text-muted mt-5 max-w-lg mx-auto">
+            Thank you, <span className="text-on-surface font-semibold">{order.customer.name.split(' ')[0]}</span>! Our
+            Banani Vault concierge will call{' '}
+            <span className="text-secondary font-semibold">{order.customer.phone}</span> prior to dispatch.
           </p>
         )}
       </div>
 
       {!awaitingPayment && !cancelled && (
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8 shadow-sm">
+        <div className="bg-surface-charcoal border border-surface-border rounded-2xl p-6 mb-8 shadow-lg">
           <div className="grid grid-cols-4 gap-2">
             {STEPS.map((s, i) => {
               const Icon = s.icon;
               const reached = i <= stepIndex;
               return (
                 <div key={s.key} className="flex flex-col items-center text-center gap-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${reached ? 'bg-brand-dark text-white' : 'bg-gray-100 text-gray-300'}`}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border ${
+                      reached
+                        ? 'bg-primary-container border-primary-container text-on-primary-container'
+                        : 'bg-surface-charcoal-elevated border-surface-border text-text-muted'
+                    }`}
+                  >
                     <Icon size={18} />
                   </div>
-                  <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${reached ? 'text-brand-dark' : 'text-gray-300'}`}>{s.label}</span>
+                  <span
+                    className={`font-label-caps text-[10px] uppercase tracking-wider ${
+                      reached ? 'text-on-surface' : 'text-text-muted'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
                 </div>
               );
             })}
           </div>
-          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden mt-5">
-            <div className="h-full bg-brand-dark rounded-full transition-all duration-700" style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }} />
+          <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden mt-5">
+            <div
+              className="h-full bg-gradient-to-r from-primary-container to-secondary rounded-full transition-all duration-700"
+              style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+            />
           </div>
         </div>
       )}
 
       <div className="grid md:grid-cols-5 gap-6">
-        <div className="md:col-span-3 self-start bg-gray-50 border border-gray-100 rounded-2xl p-6">
-          <h2 className="font-heading font-black text-sm uppercase tracking-widest text-brand-dark mb-4">Items</h2>
+        <div className="md:col-span-3 self-start bg-surface-charcoal border border-surface-border rounded-2xl p-6 shadow-lg">
+          <h2 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
+            Consignment Items
+          </h2>
           <div className="space-y-4">
             {order.items.map((item, i) => (
               <div key={i} className="flex gap-4 items-center">
-                <img src={item.image} alt="" className="w-14 h-16 object-cover rounded-lg bg-gray-200" />
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-14 h-16 object-cover rounded-lg bg-surface-container-lowest border border-surface-border"
+                />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-brand-dark truncate">{item.name}</div>
-                  <div className="text-[11px] text-gray-500">
+                  <div className="font-headline-md text-body-md font-bold text-on-surface truncate">{item.name}</div>
+                  <div className="font-label-caps text-[10px] text-text-muted uppercase">
                     Size {item.size} × {item.quantity}
-                    {item.customization && ` · ${item.customization.name ?? ''} ${item.customization.number ?? ''}`}
+                    {item.customization && ` · ${item.customization.name ?? ''} #${item.customization.number ?? ''}`}
                   </div>
                 </div>
-                <div className="font-sport font-bold text-brand-dark">{CURRENCY_SYMBOL}{(item.unitPrice * item.quantity).toLocaleString()}</div>
+                <div className="font-headline-md text-body-md font-bold text-on-surface">
+                  {CURRENCY_SYMBOL} {(item.unitPrice * item.quantity).toLocaleString()}
+                </div>
               </div>
             ))}
           </div>
-          <div className="border-t border-gray-200 mt-6 pt-4 space-y-2 text-sm">
+          <div className="border-t border-surface-border mt-6 pt-4 space-y-2 font-body-sm text-body-sm">
             <Line label="Subtotal" value={order.subtotal} />
             <Line label="Shipping" value={order.shippingFee} free />
-            {order.codFee > 0 && <Line label="COD handling" value={order.codFee} />}
-            <div className="flex justify-between font-heading font-black text-xl text-brand-dark pt-3 border-t border-gray-200">
-              <span>Total</span><span className="font-sport">{CURRENCY_SYMBOL}{order.total.toLocaleString()}</span>
+            {order.codFee > 0 && <Line label="COD Handling" value={order.codFee} />}
+            <div className="flex justify-between font-headline-md text-title-sm font-bold text-on-surface pt-3 border-t border-surface-border">
+              <span>Total</span>
+              <span className="text-secondary">
+                {CURRENCY_SYMBOL} {order.total.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="md:col-span-2 space-y-6">
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 text-sm">
-            <h2 className="font-heading font-black text-sm uppercase tracking-widest text-brand-dark mb-4">Payment</h2>
-            <div className="flex justify-between mb-2"><span className="text-gray-500">Method</span><span className="font-semibold">{METHOD_LABEL[order.paymentMethod]}</span></div>
+          <div className="bg-surface-charcoal border border-surface-border rounded-2xl p-6 font-body-sm text-body-sm shadow-lg">
+            <h2 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
+              Settlement
+            </h2>
             <div className="flex justify-between mb-2">
-              <span className="text-gray-500">Status</span>
-              <span className={`font-semibold capitalize ${paid ? 'text-green-600' : 'text-amber-600'}`}>{order.paymentMethod === 'cod' && !paid ? 'Pay on delivery' : order.paymentStatus}</span>
+              <span className="text-text-muted">Method</span>
+              <span className="font-semibold text-on-surface">{METHOD_LABEL[order.paymentMethod]}</span>
             </div>
-            {order.trxId && <div className="flex justify-between gap-3"><span className="text-gray-500">Transaction</span><span className="font-mono text-xs break-all text-right">{order.trxId}</span></div>}
+            <div className="flex justify-between mb-2">
+              <span className="text-text-muted">Status</span>
+              <span className={`font-semibold capitalize ${paid ? 'text-secondary' : 'text-primary'}`}>
+                {order.paymentMethod === 'cod' && !paid ? 'Pay on delivery' : order.paymentStatus}
+              </span>
+            </div>
+            {order.trxId && (
+              <div className="flex justify-between gap-3">
+                <span className="text-text-muted">Transaction</span>
+                <span className="font-mono text-xs break-all text-right text-on-surface">{order.trxId}</span>
+              </div>
+            )}
           </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 text-sm">
-            <h2 className="font-heading font-black text-sm uppercase tracking-widest text-brand-dark mb-4">Deliver to</h2>
-            <p className="font-semibold text-brand-dark">{order.customer.name}</p>
-            <p className="text-gray-500">{order.customer.phone}</p>
-            <p className="text-gray-500 mt-2">{order.customer.address}, {order.customer.district}</p>
+
+          <div className="bg-surface-charcoal border border-surface-border rounded-2xl p-6 font-body-sm text-body-sm shadow-lg">
+            <h2 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
+              Dispatch Address
+            </h2>
+            <p className="font-semibold text-on-surface">{order.customer.name}</p>
+            <p className="text-text-muted">{order.customer.phone}</p>
+            <p className="text-text-muted mt-2">
+              {order.customer.address}, {order.customer.district}
+            </p>
           </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 text-sm">
-            <h2 className="font-heading font-black text-sm uppercase tracking-widest text-brand-dark mb-4">Timeline</h2>
+
+          <div className="bg-surface-charcoal border border-surface-border rounded-2xl p-6 font-body-sm text-body-sm shadow-lg">
+            <h2 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
+              Consignment Log
+            </h2>
             <ol className="space-y-3">
-              {order.timeline.slice().reverse().map((e, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${i === 0 ? 'bg-brand-crimson' : 'bg-gray-300'}`} />
-                  <div><div className="text-brand-dark">{e.message}</div><div className="text-[11px] text-gray-400">{formatDate(e.at)}</div></div>
-                </li>
-              ))}
+              {order.timeline
+                .slice()
+                .reverse()
+                .map((e, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span
+                      className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
+                        i === 0 ? 'bg-primary-container' : 'bg-surface-container-highest'
+                      }`}
+                    />
+                    <div>
+                      <div className="text-on-surface">{e.message}</div>
+                      <div className="text-[11px] text-text-muted">{formatDate(e.at)}</div>
+                    </div>
+                  </li>
+                ))}
             </ol>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-        <Button onClick={() => navigateTo('home')} variant="outline" className="min-w-[160px]">Return Home</Button>
-        <Button onClick={() => navigateTo('shop')} variant="black" className="min-w-[160px]">Continue Shopping <ArrowRight size={16} /></Button>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+        <Button onClick={() => navigateTo('home')} variant="outline" className="min-w-[160px]">
+          Return Home
+        </Button>
+        <Button onClick={() => navigateTo('shop')} variant="primary" className="min-w-[160px]">
+          <span>Continue Shopping</span>
+          <ArrowRight size={16} />
+        </Button>
       </div>
     </div>
   );
 };
 
 const Line: React.FC<{ label: string; value: number; free?: boolean }> = ({ label, value, free }) => (
-  <div className="flex justify-between text-gray-500">
+  <div className="flex justify-between text-text-muted">
     <span>{label}</span>
-    <span className="font-sport text-brand-dark">{free && value === 0 ? 'FREE' : `${CURRENCY_SYMBOL}${value.toLocaleString()}`}</span>
+    <span className="font-label-numeric font-bold text-on-surface">
+      {free && value === 0 ? 'FREE' : `${CURRENCY_SYMBOL} ${value.toLocaleString()}`}
+    </span>
   </div>
 );

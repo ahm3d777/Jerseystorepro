@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k -n api,web -c magenta,cyan \"npm:dev:api\" \"npm:dev:web\"",
     "dev:web": "vite",
-    "dev:api": "wrangler dev --port 8787 --test-scheduled",
+    "dev:api": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && wrangler dev --port 8787 --test-scheduled",
     "build": "vite build",
     "preview": "npm run build && wrangler dev",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p worker/tsconfig.json",
@@ -37,5 +37,5 @@
     "vitest": "^5.0.4",
     "wrangler": "^4.149.0"
   },
-  "description": "Bangladeshi football-jersey e-commerce store \u2014 React + Cloudflare Workers + D1, with bKash and SSLCommerz checkout and an admin panel."
+  "description": "Bangladeshi football-jersey e-commerce store — React + Cloudflare Workers + D1, with bKash and SSLCommerz checkout and an admin panel."
 }

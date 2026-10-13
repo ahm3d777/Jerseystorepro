@@ -1,47 +1,65 @@
-
 import React from 'react';
 import { ChevronRight, Home, MoreHorizontal, ArrowLeft } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageView, Product } from '../types';
+import { shopPath, spaClick } from '../lib/navigation';
 
 interface BreadcrumbItem {
   label: string;
   view?: PageView;
   product?: Product;
+  /** For `view: 'shop'` — which category the crumb opens */
+  category?: string;
 }
+
+const hrefFor = (item: BreadcrumbItem) => {
+  switch (item.view) {
+    case 'shop':
+      return shopPath(item.category ?? 'All');
+    case 'product':
+      return item.product ? `/product/${encodeURIComponent(item.product.id)}` : '/shop';
+    case 'cart':
+      return '/cart';
+    case 'wishlist':
+      return '/wishlist';
+    case 'home':
+      return '/';
+    default:
+      return undefined;
+  }
+};
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
   className?: string;
 }
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = "" }) => {
-  const { navigateTo } = useStore();
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = '' }) => {
+  const { navigateTo, setCategory } = useStore();
   const maxItems = 4;
   const isTruncated = items.length > maxItems;
 
-  // SEO: BreadcrumbList Schema.org
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": items.map((item, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": item.label,
-      "item": `https://premiumkits.bd/${item.view || ''}` // Conceptual URL
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.label,
+      ...(hrefFor(item) || index === items.length - 1
+        ? { item: window.location.origin + (index === items.length - 1 ? window.location.pathname : hrefFor(item)) }
+        : {})
     }))
   };
 
   const handleNavigation = (item: BreadcrumbItem) => {
-    if (item.view) {
-      navigateTo(item.view, item.product);
-    }
+    if (!item.view) return;
+    if (item.view === 'shop') setCategory(item.category ?? 'All');
+    navigateTo(item.view, item.product);
   };
 
   const renderItems = () => {
     if (!isTruncated) return items;
-    
-    // Logic: Keep first item, last two items, and ellipsis in middle
     return [
       items[0],
       { label: '...', isSeparator: true },
@@ -51,50 +69,52 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = "" 
   };
 
   return (
-    <nav aria-label="Breadcrumb" className={`flex flex-col gap-4 ${className}`}>
-      {/* SEO Script */}
-      <script type="application/ld+json">
-        {JSON.stringify(jsonLd)}
-      </script>
+    <nav aria-label="Breadcrumb" className={`flex flex-col gap-3 ${className}`}>
+      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
 
-      {/* Mobile Back Button - UX Optimization for small screens */}
+      {/* Mobile Back Button */}
       <div className="lg:hidden">
-        {items.length > 1 && (
-          <button 
-            onClick={() => handleNavigation(items[items.length - 2])}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-brand-crimson transition-colors group"
+        {items.length > 0 && (
+          <a
+            href={(items.length > 1 && hrefFor(items[items.length - 2])) || '/'}
+            onClick={spaClick(() =>
+              items.length > 1 && items[items.length - 2].view
+                ? handleNavigation(items[items.length - 2])
+                : navigateTo('home')
+            )}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-charcoal border border-surface-border font-label-caps text-label-caps uppercase tracking-widest text-text-muted hover:text-on-surface transition-colors group"
           >
-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-            Back to {items[items.length - 2].label}
-          </button>
+            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform text-primary-container" />
+            <span>Back to {items.length > 1 && items[items.length - 2].view ? items[items.length - 2].label : 'Home'}</span>
+          </a>
         )}
       </div>
 
-      {/* Desktop/Tablet Breadcrumb List */}
-      <ol className="hidden lg:flex items-center flex-wrap gap-2 list-none">
-        {/* Always include Home icon as start */}
+      {/* Desktop Breadcrumb Trail */}
+      <ol className="hidden lg:flex items-center flex-wrap gap-1.5 list-none">
         <li className="flex items-center">
-          <button 
-            onClick={() => navigateTo('home')}
-            className="p-1 rounded-md text-gray-400 hover:text-brand-dark hover:bg-gray-100 transition-all flex items-center justify-center"
+          <a
+            href="/"
+            onClick={spaClick(() => navigateTo('home'))}
+            className="p-1.5 rounded-lg text-text-muted hover:text-on-surface hover:bg-surface-charcoal transition-all flex items-center justify-center"
             aria-label="Home"
           >
             <Home size={14} />
-          </button>
-          <ChevronRight size={12} className="mx-2 text-gray-300" />
+          </a>
+          <ChevronRight size={12} className="mx-1.5 text-surface-container-highest" aria-hidden />
         </li>
 
         {renderItems().map((item, index, array) => {
           const isLast = index === array.length - 1;
-          const isSeparator = (item as any).isSeparator;
+          const isSeparator = (item as { isSeparator?: boolean }).isSeparator;
 
           if (isSeparator) {
             return (
               <li key="ellipsis" className="flex items-center">
-                <span className="p-1 text-gray-400">
+                <span className="p-1 text-text-muted">
                   <MoreHorizontal size={14} />
                 </span>
-                <ChevronRight size={12} className="mx-2 text-gray-300" />
+                <ChevronRight size={12} className="mx-1.5 text-surface-container-highest" aria-hidden />
               </li>
             );
           }
@@ -102,21 +122,22 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = "" 
           return (
             <li key={`${item.label}-${index}`} className="flex items-center">
               {isLast ? (
-                <span 
-                  className="text-xs font-bold text-brand-dark border-b-2 border-brand-crimson pb-0.5"
+                <span
+                  className="font-label-caps text-label-caps uppercase tracking-wider text-on-surface bg-surface-charcoal border border-surface-border px-2.5 py-1 rounded-md"
                   aria-current="page"
                 >
                   {item.label}
                 </span>
               ) : (
                 <>
-                  <button 
-                    onClick={() => handleNavigation(item)}
-                    className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-brand-dark transition-all"
+                  <a
+                    href={hrefFor(item)}
+                    onClick={spaClick(() => handleNavigation(item))}
+                    className="font-label-caps text-label-caps uppercase tracking-wider text-text-muted hover:text-on-surface px-2 py-1 rounded-md hover:bg-surface-charcoal transition-all"
                   >
                     {item.label}
-                  </button>
-                  <ChevronRight size={12} className="mx-2 text-gray-300" />
+                  </a>
+                  <ChevronRight size={12} className="mx-1.5 text-surface-container-highest" aria-hidden />
                 </>
               )}
             </li>

@@ -1,27 +1,31 @@
-
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
-import { CURRENCY_SYMBOL } from '../constants';
-import { Badge, Skeleton } from './UI';
+import { CURRENCY_SYMBOL, AVAILABLE_SIZES, getProductMicroSpec } from '../constants';
+import { Skeleton } from './UI';
 import { useStore } from '../context/StoreContext';
-import { Heart, Eye, ShoppingBag, ArrowUpRight, Zap } from 'lucide-react';
+import { Heart, ShoppingBag } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCardSkeleton = () => (
-  <div className="bg-white rounded-lg sm:rounded-xl border border-gray-100 overflow-hidden">
-    <Skeleton className="aspect-[3/4] w-full" />
-    <div className="p-3 sm:p-5 space-y-2 sm:space-y-3">
+  <div className="rounded-xl bg-surface-charcoal border border-surface-border p-4 shadow-lg flex flex-col">
+    <Skeleton className="aspect-[4/5] w-full rounded-lg" />
+    <div className="mt-4 space-y-2.5">
       <div className="flex justify-between items-center">
-        <Skeleton className="h-3 w-12 rounded-sm" />
-        <Skeleton className="h-2 w-8 rounded-sm" />
+        <Skeleton className="h-3 w-24 rounded" />
+        <Skeleton className="h-3 w-12 rounded" />
       </div>
-      <Skeleton className="h-5 w-3/4 rounded-sm" />
-      <div className="flex justify-between items-center pt-1">
-        <Skeleton className="h-5 w-16 rounded-sm" />
-        <Skeleton className="h-7 w-7 rounded-full" />
+      <Skeleton className="h-5 w-4/5 rounded" />
+      <div className="flex gap-1.5 pt-1">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="w-6 h-6 rounded" />
+        ))}
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <Skeleton className="h-6 w-20 rounded" />
+        <Skeleton className="h-9 w-9 rounded-lg" />
       </div>
     </div>
   </div>
@@ -33,6 +37,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [imgSrc, setImgSrc] = useState(product.image);
   const [hasError, setHasError] = useState(false);
 
+  const spec = getProductMicroSpec(product);
+  const discountPct =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(100 - (product.price / product.originalPrice) * 100)
+      : null;
+
   useEffect(() => {
     setImgSrc(product.image);
     setHasError(false);
@@ -41,9 +51,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleImageError = () => {
     if (!hasError) {
       setHasError(true);
-      const bg = product.color || '1e293b';
+      const bg = product.color || '141418';
       const text = ['F7B5CD', 'FCD116', 'FFFFFF'].includes(bg) ? '000000' : 'FFFFFF';
-      setImgSrc(`https://placehold.co/600x800/${bg}/${text}?text=${encodeURIComponent(product.team)}`);
+      setImgSrc(`https://placehold.co/600x750/${bg}/${text}?text=${encodeURIComponent(product.team)}`);
     }
   };
 
@@ -52,91 +62,169 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     toggleWishlist(product.id);
   };
 
-  return (
-    <div 
-      className="group relative bg-white cursor-pointer rounded-lg sm:rounded-2xl border border-gray-100 hover:border-brand-crimson/40 hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full active:scale-[0.98]"
-      onClick={() => navigateTo('product', product)}
-    >
-      <div className="relative aspect-[3/4] overflow-hidden bg-gray-50 shrink-0">
-        <div className="absolute inset-0 bg-brand-crimson/0 group-hover:bg-brand-crimson/5 transition-colors duration-700"></div>
+  const editionBadgeClasses: Record<typeof spec.badgeVariant, string> = {
+    crimson: 'bg-primary-container text-on-primary-container',
+    gold: 'bg-secondary text-on-secondary',
+    'charcoal-gold': 'bg-surface-charcoal-elevated/95 text-secondary border border-surface-border',
+    'charcoal-tertiary': 'bg-surface-charcoal-elevated/95 text-tertiary border border-surface-border'
+  };
 
-        <div className="absolute top-0 left-0 z-20 flex flex-col gap-1.5 p-2 sm:p-4">
-          {product.isPlayerEdition && (
-            <span className="bg-brand-dark text-brand-gold text-[7px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg border border-brand-gold/20">
-              Player
+  const isPrimaryCta = product.isPlayerEdition || Boolean(product.originalPrice) || product.type === 'Special';
+
+  return (
+    <div
+      onClick={() => navigateTo('product', product)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigateTo('product', product);
+        }
+      }}
+      className="group relative flex flex-col rounded-xl bg-surface-charcoal border border-surface-border hover:border-primary-container/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full"
+    >
+      {/* Image Stage */}
+      <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-surface-container-lowest shrink-0">
+        <img
+          src={imgSrc}
+          alt={product.name}
+          onError={handleImageError}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+
+        {/* Top-Left Edition & Status Badges */}
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 z-10 pr-10">
+          <span
+            className={`px-2 py-0.5 rounded font-label-caps text-label-caps uppercase font-bold shadow-sm ${editionBadgeClasses[spec.badgeVariant]}`}
+          >
+            {spec.editionBadge}
+          </span>
+          {discountPct && (
+            <span className="px-2 py-0.5 rounded bg-surface-charcoal/90 text-secondary font-label-caps text-label-caps font-bold border border-surface-border/60">
+              -{discountPct}%
             </span>
           )}
           {product.status === 'out-of-stock' && (
-            <span className="bg-gray-900/80 text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
-              Sold Out
+            <span className="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-caps text-label-caps uppercase font-bold">
+              SOLD OUT
             </span>
           )}
-          {product.status === 'pre-order' && (
-            <span className="bg-brand-gold text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
-              Pre-order
+          {product.status === 'pre-order' && !discountPct && (
+            <span className="px-2 py-0.5 rounded bg-surface-charcoal/90 text-tertiary font-label-caps text-label-caps uppercase font-bold">
+              PRE-ORDER
             </span>
           )}
           {product.status === 'low-stock' && product.stock !== undefined && (
-            <span className="bg-white text-brand-crimson text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
-              Only {product.stock} left
-            </span>
-          )}
-          {product.originalPrice && (
-            <span className="bg-brand-crimson text-white text-[7px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-1 rounded shadow-lg">
-              Save {(100 - (product.price / product.originalPrice * 100)).toFixed(0)}%
+            <span className="px-2 py-0.5 rounded bg-surface-charcoal/90 text-primary font-label-caps text-label-caps uppercase font-bold">
+              {product.stock} LEFT
             </span>
           )}
         </div>
 
-        <button 
+        {/* Wishlist Action */}
+        <button
+          type="button"
+          aria-label={isLiked ? 'Remove from wishlist' : 'Add to wishlist'}
           onClick={handleWishlistClick}
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-30 w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md border border-white/40 text-brand-dark shadow-sm transition-all hover:bg-brand-crimson hover:text-white active:scale-90"
+          className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-surface-charcoal/85 backdrop-blur-md border border-surface-border/60 flex items-center justify-center transition-colors ${
+            isLiked ? 'text-primary-container' : 'text-on-surface hover:text-primary'
+          }`}
         >
-          {/* Combined multiple className attributes into one */}
-          <Heart size={14} fill={isLiked ? "currentColor" : "none"} className={`sm:w-5 sm:h-5 ${isLiked ? "text-white" : "text-brand-dark"}`} />
+          <Heart size={15} fill={isLiked ? 'currentColor' : 'none'} />
         </button>
 
-        <img 
-          src={imgSrc} 
-          alt={product.name} 
-          onError={handleImageError}
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-        />
-        
-        {/* Mobile Quick Tap Indicator (Subtle) */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-brand-dark/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+        {/* Bottom Floating Micro-Spec Bar */}
+        <div className="absolute bottom-3 left-3 right-3 px-2.5 py-1.5 rounded-md bg-surface-container-lowest/85 backdrop-blur-md border border-white/5 flex items-center justify-between text-on-surface-variant gap-2">
+          <span
+            className={`font-label-caps text-[10px] tracking-wider uppercase truncate ${
+              spec.badgeVariant === 'charcoal-tertiary' ? 'text-tertiary' : 'text-secondary'
+            }`}
+          >
+            {spec.specLeft}
+          </span>
+          <span
+            className={`font-label-caps text-[10px] shrink-0 ${
+              spec.specRightTone === 'tertiary'
+                ? 'text-tertiary'
+                : spec.specRightTone === 'secondary'
+                  ? 'text-secondary'
+                  : 'text-text-muted'
+            }`}
+          >
+            {spec.specRight}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-col flex-grow p-3 sm:p-6 bg-white relative z-10">
-        <div className="flex justify-between items-center mb-1.5 sm:mb-3">
-            <div className="flex items-center gap-1">
-               <Zap size={8} className="text-brand-gold fill-brand-gold sm:w-2.5 sm:h-2.5" />
-               <div className="text-[7px] sm:text-[9px] font-black tracking-widest text-brand-gold uppercase truncate max-w-[80px] sm:max-w-none">
-                  {product.team}
-               </div>
-            </div>
-            <div className="text-[7px] sm:text-[9px] text-gray-400 font-bold uppercase tracking-widest">{product.season || '25/26'}</div>
+      {/* Product Metadata Cluster */}
+      <div className="flex flex-col flex-grow mt-4">
+        <div className="flex items-center justify-between text-text-muted mb-1">
+          <span className="font-label-caps text-label-caps uppercase tracking-wider text-secondary truncate">
+            ✦ {spec.displayClub || product.team}
+          </span>
+          <span className="font-label-caps text-label-caps shrink-0">
+            {spec.displaySeason || product.season || '2025/26'}
+          </span>
         </div>
-        
-        <h3 className="font-heading font-bold text-brand-dark text-xs sm:text-base leading-tight group-hover:text-brand-crimson transition-colors duration-300 line-clamp-2 mb-3 sm:mb-4 flex-grow">
+
+        <h3 className="font-headline-md text-title-sm font-bold text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">
           {product.name}
         </h3>
-        
-        <div className="flex items-center justify-between pt-2 sm:pt-4 border-t border-gray-50 mt-auto">
-          <div className="flex items-baseline gap-1 sm:gap-2">
-            <span className="text-sm sm:text-xl font-bold font-sport text-brand-dark">
-                {CURRENCY_SYMBOL}{product.price.toLocaleString()}
+
+        {/* Sizes Row */}
+        <div className="flex items-center gap-1.5 mt-3">
+          {AVAILABLE_SIZES.map((size) => {
+            const label = size === 'XXL' ? '2XL' : size;
+            const isOut =
+              product.status === 'out-of-stock' ||
+              Boolean(spec.outOfStockSizes && spec.outOfStockSizes.includes(size));
+            return (
+              <span
+                key={size}
+                className={`w-6 h-6 rounded flex items-center justify-center font-label-caps text-[10px] ${
+                  isOut
+                    ? 'bg-surface-container-high text-on-surface-variant line-through opacity-60'
+                    : 'bg-surface-container text-on-surface font-semibold'
+                }`}
+              >
+                {label}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* Pricing & Action Footer */}
+        <div className="flex items-center justify-between mt-4 pt-3 bg-surface-charcoal-elevated/40 border-t border-surface-border/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl mt-auto">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className="font-headline-md text-headline-md text-on-surface font-bold whitespace-nowrap">
+              {CURRENCY_SYMBOL} {product.price.toLocaleString()}
             </span>
-            {product.originalPrice && (
-                <span className="text-[9px] sm:text-xs text-gray-300 line-through font-sport">
-                {product.originalPrice.toLocaleString()}
-                </span>
-            )}
+            {product.originalPrice ? (
+              <span className="font-body-sm text-body-sm text-text-muted line-through whitespace-nowrap">
+                {CURRENCY_SYMBOL} {product.originalPrice.toLocaleString()}
+              </span>
+            ) : spec.priceSubtext ? (
+              <span
+                className={`font-body-sm text-body-sm truncate ${
+                  spec.priceSubtextTone === 'secondary' ? 'text-secondary font-semibold' : 'text-text-muted'
+                }`}
+              >
+                {spec.priceSubtext}
+              </span>
+            ) : null}
           </div>
-          
-          <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-brand-dark group-hover:text-white transition-all duration-300">
-             <ShoppingBag size={12} className="sm:w-[18px] sm:h-[18px]" />
-          </div>
+
+          <span
+            aria-hidden="true"
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors shadow-md shrink-0 ${
+              isPrimaryCta
+                ? 'bg-primary-container group-hover:bg-crimson-vibrant text-on-primary-container'
+                : 'bg-surface-container-high group-hover:bg-primary-container text-on-surface group-hover:text-on-primary-container'
+            }`}
+          >
+            <ShoppingBag size={16} />
+          </span>
         </div>
       </div>
     </div>
